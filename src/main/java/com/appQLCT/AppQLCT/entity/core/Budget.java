@@ -42,6 +42,7 @@ public class Budget {
     @Column(name = "amount_limit", precision = 15, scale = 2, nullable = false)
     private BigDecimal amountLimit;
 
+    @Builder.Default
     @Column(name = "spent_amount", precision = 15, scale = 2)
     private BigDecimal spentAmount = BigDecimal.ZERO;
 

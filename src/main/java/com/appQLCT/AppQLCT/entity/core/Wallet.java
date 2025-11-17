@@ -2,19 +2,20 @@ package com.appQLCT.AppQLCT.entity.core;
 
 import com.appQLCT.AppQLCT.entity.authentic.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "wallets")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
-@NoArgsConstructor                
-@AllArgsConstructor               
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Wallet {
 
@@ -25,21 +26,30 @@ public class Wallet {
 
     @Column(name = "balance", precision = 15, scale = 2)
     private BigDecimal balance;
-    
+
     @Column(name = "wallet_name", nullable = false)
     private String walletName;
 
     @Column(name = "type", nullable = false)
     private String type;
 
-    @Builder.Default    
+    @Builder.Default
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    // ✅ Khi xóa ví → xóa luôn mọi expense liên quan
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // 💡 Ngắt vòng lặp JSON (cha của Expense)
+    private List<Expense> expenses;
+
+    // ✅ Khi xóa ví → xóa luôn mọi income liên quan (nếu có)
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // 💡 Ngắt vòng lặp JSON (cha của Income)
+    private List<Income> incomes;
+
+    // 👤 Chủ sở hữu ví
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties({"wallets", "expenses", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"wallets", "expenses", "incomes", "hibernateLazyInitializer", "handler"})
     private User user;
-
-    
 }

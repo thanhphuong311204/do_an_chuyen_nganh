@@ -3,7 +3,7 @@ package com.appQLCT.AppQLCT.entity.core;
 import com.appQLCT.AppQLCT.entity.authentic.User;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime; 
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
@@ -26,7 +26,6 @@ public class Notification {
     private String notificationMessage;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
     private NotificationType type;
 
     @Builder.Default

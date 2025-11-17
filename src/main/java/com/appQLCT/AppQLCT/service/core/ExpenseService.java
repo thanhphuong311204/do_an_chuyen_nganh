@@ -2,15 +2,13 @@ package com.appQLCT.AppQLCT.service.core;
 
 import com.appQLCT.AppQLCT.dto.ExpenseRequest;
 import com.appQLCT.AppQLCT.entity.authentic.User;
-import com.appQLCT.AppQLCT.entity.core.Category;
-import com.appQLCT.AppQLCT.entity.core.Expense;
-import com.appQLCT.AppQLCT.entity.core.Wallet;
-import com.appQLCT.AppQLCT.repository.core.CategoryRepository;
-import com.appQLCT.AppQLCT.repository.core.ExpenseRepository;
-import com.appQLCT.AppQLCT.repository.core.WalletRepository;
+import com.appQLCT.AppQLCT.entity.core.*;
+import com.appQLCT.AppQLCT.repository.core.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -20,66 +18,74 @@ public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final WalletRepository walletRepository;
     private final CategoryRepository categoryRepository;
-    private final NotificationService notificationService; // ✅ thêm vào
+    private final NotificationService notificationService;
+    private final BudgetRepository budgetRepository;
+    private final BudgetService budgetService;
 
+    // ✅ Lấy danh sách chi tiêu của user
     public List<Expense> getExpensesByUser(User user) {
         return expenseRepository.findByUser(user);
     }
 
+    // ✅ Tạo chi tiêu mới
     public Expense createExpense(ExpenseRequest request, User user) {
 
-        Wallet wallet = walletRepository.findByWalletNameAndUser(request.getWalletName(), user)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy ví!"));
+        Wallet wallet = walletRepository.findById(request.getWalletId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ví ID: " + request.getWalletId()));
 
-        List<Category> categories = categoryRepository.findByCategoryName(request.getCategoryName());
-        if (categories.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy danh mục!");
-        }
-        Category category = categories.get(0); // lấy danh mục đầu tiên nếu trùng tên
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục ID: " + request.getCategoryId()));
 
         Expense expense = Expense.builder()
-                .amount(request.getAmount())
+                .amount(BigDecimal.valueOf(request.getAmount()))
                 .note(request.getNote())
                 .category(category)
                 .wallet(wallet)
                 .user(user)
+                .createAt(LocalDate.now())
                 .build();
 
         Expense saved = expenseRepository.save(expense);
 
-        // 🔔 Gửi thông báo sau khi tạo chi tiêu
+        // ✅ Trừ tiền trong ví
+        if (wallet.getBalance() == null) wallet.setBalance(BigDecimal.ZERO);
+        wallet.setBalance(wallet.getBalance().subtract(BigDecimal.valueOf(request.getAmount())));
+        walletRepository.save(wallet);
+
+        // ✅ Gửi thông báo chi tiêu
         notificationService.createNotification(
                 user,
                 "Thêm chi tiêu mới 💸",
-                "Bạn vừa thêm chi tiêu " + request.getAmount() + " vào danh mục " + category.getCategoryName() +
-                        " từ ví " + wallet.getWalletName(),
+                "Bạn vừa thêm " + request.getAmount() + " vào danh mục " +
+                        category.getCategoryName() + " từ ví " + wallet.getWalletName(),
                 "transaction"
         );
+
+        // ✅ Cập nhật ngân sách liên quan
+        updateRelatedBudgets(user, category, wallet);
 
         return saved;
     }
 
+    // ✅ Cập nhật chi tiêu
     public Expense updateExpense(Long id, ExpenseRequest request, User user) {
         Expense existing = expenseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiêu!"));
 
-        Wallet wallet = walletRepository.findByWalletNameAndUser(request.getWalletName(), user)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy ví!"));
+        Wallet wallet = walletRepository.findById(request.getWalletId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ví ID: " + request.getWalletId()));
 
-        List<Category> categories = categoryRepository.findByCategoryName(request.getCategoryName());
-        if (categories.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy danh mục!");
-        }
-        Category category = categories.get(0);
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục ID: " + request.getCategoryId()));
 
-        existing.setAmount(request.getAmount());
+        existing.setAmount(BigDecimal.valueOf(request.getAmount()));
         existing.setNote(request.getNote());
         existing.setWallet(wallet);
         existing.setCategory(category);
+        existing.setCreateAt(LocalDate.now());
 
         Expense updated = expenseRepository.save(existing);
 
-        // 🔔 Thông báo khi cập nhật chi tiêu
         notificationService.createNotification(
                 user,
                 "Cập nhật chi tiêu 🧾",
@@ -87,21 +93,67 @@ public class ExpenseService {
                 "transaction"
         );
 
+        updateRelatedBudgets(user, category, wallet);
         return updated;
     }
 
-    public void deleteExpense(Long id) {
-        Expense deleted = expenseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiêu!"));
+    // ✅ Xoá chi tiêu
+public void deleteExpense(Long id) {
+    Expense deleted = expenseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiêu!"));
 
-        expenseRepository.deleteById(id);
+    Wallet wallet = deleted.getWallet();
+    Category category = deleted.getCategory();
+    User user = deleted.getUser();
 
-        // 🔔 Thông báo khi xóa chi tiêu
-        notificationService.createNotification(
-                deleted.getUser(),
-                "Xóa chi tiêu ❌",
-                "Bạn vừa xóa chi tiêu thuộc danh mục " + deleted.getCategory().getCategoryName(),
-                "transaction"
-        );
+    // ✅ Hoàn lại tiền ví
+    if (wallet != null) {
+        wallet.setBalance(wallet.getBalance().add(deleted.getAmount()));
+        walletRepository.save(wallet);
+    }
+
+    // ✅ Xóa chi tiêu
+    expenseRepository.deleteById(id);
+
+    // ✅ Cập nhật lại ngân sách (tự động trừ lại phần chi bị xóa)
+    updateRelatedBudgets(user, category, wallet);
+
+    // ✅ Gửi thông báo
+    notificationService.createNotification(
+            user,
+            "Xóa chi tiêu ❌",
+            "Bạn vừa xóa chi tiêu trong danh mục " + category.getCategoryName(),
+            "transaction"
+    );
+}
+    // ✅ Cập nhật ngân sách (đã fix lỗi getId)
+    private void updateRelatedBudgets(User user, Category category, Wallet wallet) {
+        List<Budget> budgets = budgetRepository.findByUser(user);
+
+        for (Budget b : budgets) {
+            if (b.getCategory().getCategoryId().equals(category.getCategoryId())) {
+                BigDecimal totalSpent;
+
+                if (b.getWallet() != null) {
+                    totalSpent = expenseRepository.sumByCategoryAndWalletAndDateRange(
+                            user.getId(),
+                            b.getCategory().getCategoryId(),
+                            b.getWallet().getId(),
+                            b.getStartDate(),
+                            b.getEndDate()
+                    );
+                } else {
+                    totalSpent = expenseRepository.sumByCategoryAndDateRange(
+                            user.getId(),
+                            b.getCategory().getCategoryId(),
+                            b.getStartDate(),
+                            b.getEndDate()
+                    );
+                }
+
+                budgetService.updateSpentAmount(b, totalSpent);
+                budgetService.checkBudgetLimit(b);
+            }
+        }
     }
 }

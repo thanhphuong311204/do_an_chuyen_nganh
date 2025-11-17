@@ -32,10 +32,15 @@ public class User {
 
     @Column(name = "provider_uid")
     private String providerUid;
+    @Builder.Default
+    @Column(name = "phone", length = 20)
+    private String phone = null;
 
+    @Builder.Default
     @Column(nullable = false)
     private String role = "USER";
-    
+
+    @Builder.Default
     @Column(nullable = false)
     private boolean active = true;
 

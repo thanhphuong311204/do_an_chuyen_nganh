@@ -11,45 +11,31 @@ public class Category {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name = "category_name", nullable = false, unique = true)
+    @Column(name = "category_name", nullable = false)
     private String categoryName;
 
     @Column(nullable = false)
-    private String type; // expense hoặc income
+    private String type; // expense, income, goal
 
-    @Column(name = "icon")
-    private String Icon;
+    @Column(name = "is_public", nullable = false)
+    private boolean isPublic = true;
+
+    @Column(name = "icon_url")
+    private String iconUrl;
 
     // Getters và Setters
-    public Long getCategoryId() {
-        return categoryId;
-    }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 
-    public String getCategoryName() {
-        return categoryName;
-    }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
+    public boolean isPublic() { return isPublic; }
+    public void setPublic(boolean isPublic) { this.isPublic = isPublic; }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getIcon() {
-        return Icon;
-    }
-
-    public void setIdIcon(String Icon) {
-        this.Icon = Icon;
-    }
+    public String getIconUrl() { return iconUrl; }
+    public void setIconUrl(String iconUrl) { this.iconUrl = iconUrl; }
 }

@@ -44,6 +44,7 @@ private Long goalId;
     @Column(name = "target_amount", nullable = false)
     private BigDecimal targetAmount;
 
+    @Builder.Default
     @Column(name = "current_amount", nullable = false)
     private BigDecimal currentAmount = BigDecimal.ZERO;
 
