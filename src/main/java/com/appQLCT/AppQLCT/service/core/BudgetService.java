@@ -22,7 +22,7 @@ public class BudgetService {
     private final CategoryRepository categoryRepository;
     private final WalletRepository walletRepository;
     private final UserService userService;
-    private final NotificationService notificationService; // ✅ thêm dòng này
+    private final NotificationService notificationService;
 
     // ✅ Lấy danh sách ngân sách theo user
     public List<Budget> getBudgetsByUser() {
@@ -30,24 +30,29 @@ public class BudgetService {
         return budgetRepository.findByUser(user);
     }
 
-    // ✅ Tạo mới ngân sách
+    // ✅ Tạo mới ngân sách (đã fix lỗi "Không tìm thấy danh mục")
     public Budget createBudget(BudgetRequest request) {
         User user = userService.getCurrentUser();
 
-        // Tìm danh mục
+        // 🔍 1️⃣ Tìm hoặc tạo mới Category
         Category category = categoryRepository.findByCategoryName(request.getCategoryName())
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục: " + request.getCategoryName()));
+                .orElseGet(() -> {
+                    Category newCat = new Category();
+                    newCat.setCategoryName(request.getCategoryName());
+                    newCat.setType("expense"); // mặc định cho ngân sách là chi tiêu
+                    return categoryRepository.save(newCat);
+                });
 
-        // Tìm ví (nếu có)
+        // 🔍 2️⃣ Tìm ví nếu có
         Wallet wallet = null;
         if (request.getWalletName() != null && !request.getWalletName().isEmpty()) {
             wallet = walletRepository.findByWalletNameAndUser(request.getWalletName(), user)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy ví: " + request.getWalletName()));
         }
 
-        // Tạo mới ngân sách
+        // 🧮 3️⃣ Tạo mới ngân sách
         Budget budget = Budget.builder()
                 .user(user)
                 .category(category)
@@ -58,10 +63,21 @@ public class BudgetService {
                 .endDate(request.getEndDate())
                 .build();
 
-        return budgetRepository.save(budget);
+        Budget saved = budgetRepository.save(budget);
+
+        // 🔔 4️⃣ Gửi thông báo
+        notificationService.createNotification(
+                user,
+                "Tạo ngân sách mới 💰",
+                "Danh mục: " + category.getCategoryName() + 
+                " • Giới hạn: " + request.getAmountLimit() + "đ",
+                "budget"
+        );
+
+        return saved;
     }
 
-    // ✅ Kiểm tra giới hạn ngân sách (gọi khi update chi tiêu)
+    // ✅ Kiểm tra giới hạn ngân sách (gọi khi thêm chi tiêu)
     public void checkBudgetLimit(Budget budget) {
         if (budget == null) return;
 
@@ -70,24 +86,31 @@ public class BudgetService {
 
         if (limit.compareTo(BigDecimal.ZERO) == 0) return;
 
-        BigDecimal percent = spent.multiply(BigDecimal.valueOf(100)).divide(limit, 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal percent = spent.multiply(BigDecimal.valueOf(100))
+                .divide(limit, 2, BigDecimal.ROUND_HALF_UP);
 
         if (percent.compareTo(BigDecimal.valueOf(100)) >= 0) {
             notificationService.createNotification(
                     budget.getUser(),
                     "Ngân sách vượt giới hạn!",
-                    "Bạn đã chi tiêu vượt 100% ngân sách cho danh mục " + budget.getCategory().getCategoryName(),
+                    "Bạn đã chi tiêu vượt 100% ngân sách cho " + budget.getCategory().getCategoryName(),
                     "budget"
             );
         } else if (percent.compareTo(BigDecimal.valueOf(80)) >= 0) {
             notificationService.createNotification(
                     budget.getUser(),
-                    "Cảnh báo sắp vượt ngân sách!",
-                    "Bạn đã chi tiêu hơn 80% ngân sách cho danh mục " + budget.getCategory().getCategoryName(),
+                    "⚠️ Gần vượt ngân sách!",
+                    "Bạn đã chi tiêu hơn 80% ngân sách cho " + budget.getCategory().getCategoryName(),
                     "budget"
             );
         }
     }
+    // ✅ Cập nhật số tiền đã chi (spentAmount) cho ngân sách
+public void updateSpentAmount(Budget budget, BigDecimal totalSpent) {
+    budget.setSpentAmount(totalSpent != null ? totalSpent : BigDecimal.ZERO);
+    budgetRepository.save(budget);
+}
+
 
     // ✅ Xóa ngân sách
     public void deleteBudget(Long id) {

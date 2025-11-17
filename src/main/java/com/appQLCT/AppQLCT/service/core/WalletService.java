@@ -5,6 +5,7 @@ import com.appQLCT.AppQLCT.entity.authentic.User;
 import com.appQLCT.AppQLCT.entity.core.Wallet;
 import com.appQLCT.AppQLCT.repository.core.WalletRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 public class WalletService {
 
     private final WalletRepository walletRepository;
-    private final NotificationService notificationService; // ✅ thêm vào
+    private final NotificationService notificationService; // ✅ thông báo
 
     // ✅ Lấy tất cả ví của user
     public List<Wallet> getWalletsByUserId(Long userId) {
@@ -48,8 +49,12 @@ public class WalletService {
         Wallet wallet = walletRepository.findById(walletId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví!"));
 
+        // ⚙️ In log để debug quyền user
+        System.out.println("🧾 Ví thuộc user_id: " + wallet.getUser().getId());
+        System.out.println("👤 Người đăng nhập user_id: " + user.getId());
+
         if (!wallet.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Không có quyền sửa ví này!");
+            throw new RuntimeException("❌ Không có quyền sửa ví này!");
         }
 
         wallet.setWalletName(request.getWalletName());
@@ -74,18 +79,32 @@ public class WalletService {
         Wallet wallet = walletRepository.findById(walletId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví!"));
 
+        // ⚙️ In log ra để xem lỗi 403 có phải do user không khớp không
+        System.out.println("🧾 Ví thuộc user_id: " + wallet.getUser().getId());
+        System.out.println("👤 Người đăng nhập user_id: " + user.getId());
+
         if (!wallet.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Không có quyền xóa ví này!");
+            throw new RuntimeException("❌ Không có quyền xóa ví này!");
         }
 
-        walletRepository.delete(wallet);
+        try {
+            // ✅ Xóa ví
+            walletRepository.delete(wallet);
 
-        // 🔔 Thông báo khi xóa ví
-        notificationService.createNotification(
-                user,
-                "Xóa ví ❌",
-                "Bạn vừa xóa ví \"" + wallet.getWalletName() + "\" khỏi hệ thống.",
-                "system"
-        );
+            // 🔔 Thông báo khi xóa ví
+            notificationService.createNotification(
+                    user,
+                    "Xóa ví ❌",
+                    "Bạn vừa xóa ví \"" + wallet.getWalletName() + "\" khỏi hệ thống.",
+                    "system"
+            );
+
+            System.out.println("✅ Đã xóa ví thành công: " + wallet.getWalletName());
+
+        } catch (DataIntegrityViolationException e) {
+            // ⚠️ Nếu ví đang có giao dịch (bị ràng buộc FK)
+            System.out.println("⚠️ Không thể xóa ví vì đang có giao dịch liên kết!");
+            throw new RuntimeException("⚠️ Ví đang có giao dịch, không thể xóa!");
+        }
     }
 }

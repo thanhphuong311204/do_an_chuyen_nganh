@@ -1,20 +1,14 @@
 package com.appQLCT.AppQLCT.dto;
 
-import lombok.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class IncomeRequest {
-    private BigDecimal amount;
+    private Double amount;
     private String note;
-    private LocalDate incomeDate;
-    private String categoryName;
-    private String walletName;
-
+    private Long categoryId;
+    private Long walletId;
+    private String incomeDate;
 }

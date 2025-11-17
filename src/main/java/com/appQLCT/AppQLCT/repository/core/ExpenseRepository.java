@@ -12,14 +12,41 @@ import java.util.List;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
-    // Lấy tất cả expense của user
     List<Expense> findByUser(User user);
 
-    // Tính tổng chi tiêu trong khoảng thời gian
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.createAt BETWEEN :start AND :end")
-
     BigDecimal sumByUserAndDateRange(
             @Param("userId") Long userId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
+
+    // ✅ Tính tổng chi theo danh mục trong khoảng thời gian ngân sách
+    @Query("""
+        SELECT SUM(e.amount) FROM Expense e 
+        WHERE e.user.id = :userId 
+          AND e.category.id = :categoryId 
+          AND e.createAt BETWEEN :start AND :end
+    """)
+    BigDecimal sumByCategoryAndDateRange(
+            @Param("userId") Long userId,
+            @Param("categoryId") Long categoryId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
+
+    // ✅ Nếu ngân sách có ví cụ thể → tính tổng chi của danh mục đó trong ví đó
+    @Query("""
+        SELECT SUM(e.amount) FROM Expense e 
+        WHERE e.user.id = :userId 
+          AND e.category.id = :categoryId 
+          AND e.wallet.id = :walletId 
+          AND e.createAt BETWEEN :start AND :end
+    """)
+    BigDecimal sumByCategoryAndWalletAndDateRange(
+            @Param("userId") Long userId,
+            @Param("categoryId") Long categoryId,
+            @Param("walletId") Long walletId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
     );

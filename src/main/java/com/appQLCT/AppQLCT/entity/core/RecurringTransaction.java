@@ -2,6 +2,7 @@ package com.appQLCT.AppQLCT.entity.core;
 
 import com.appQLCT.AppQLCT.entity.authentic.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,6 +35,9 @@ public class RecurringTransaction {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
 
+    @Column(name = "category_name")
+    private String categoryName;
+
     @Column(nullable = false)
     private BigDecimal amount;
 
@@ -48,4 +52,9 @@ public class RecurringTransaction {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Wallet wallet;
 }

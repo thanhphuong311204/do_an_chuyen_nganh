@@ -45,4 +45,10 @@ public class Income {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id")
+    @JsonIgnoreProperties({"incomes", "expenses", "user", "hibernateLazyInitializer", "handler"})
+    private Wallet wallet;
+
 }

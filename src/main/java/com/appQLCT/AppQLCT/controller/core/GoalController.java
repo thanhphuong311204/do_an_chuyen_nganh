@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/goals")
@@ -31,4 +33,14 @@ public class GoalController {
         goalService.deleteGoal(id);
         return ResponseEntity.ok("Xóa mục tiêu thành công");
     }
+
+    // 🆕 ➕ Cập nhật tiến độ (Flutter gọi API này khi nhấn nút “Thêm tiến độ”)
+    @PutMapping("/{id}/progress")
+    public ResponseEntity<Goal> updateGoalProgress(
+            @PathVariable Long id,
+            @RequestBody Map<String, BigDecimal> body) {
+        BigDecimal amount = body.get("amount");
+        return ResponseEntity.ok(goalService.updateProgress(id, amount));
+    }
+    
 }

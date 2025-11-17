@@ -6,7 +6,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,18 +22,17 @@ import com.appQLCT.security.JwtUtil;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    
+
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserService userService;
-    public AuthController(AuthenticationManager authenticationManager,
-                         JwtUtil jwtUtil,
-                         UserService userService,
-                         PasswordEncoder passwordEncoder) {
+
+    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
     }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -52,7 +50,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         try {
-            User user = userService.registerUser(registerRequest); 
+            User user = userService.registerUser(registerRequest);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "User registered successfully");
             response.put("username", user.getUsername());

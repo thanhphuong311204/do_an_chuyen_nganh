@@ -1,8 +1,8 @@
 package com.appQLCT.AppQLCT.entity.core;
 
 import com.appQLCT.AppQLCT.entity.authentic.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -32,10 +32,10 @@ public class Expense {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
 
-    @Column(name = "amount" ,nullable = false)
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
-    @Column( name = "note",length = 255)
+    @Column(name = "note", length = 255)
     private String note;
 
     @Column(name = "created_at")
@@ -43,12 +43,12 @@ public class Expense {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id")
+    @JsonBackReference // ✅ Cắt vòng lặp JSON (Expense -> Wallet -> Expense -> ...)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
     private Wallet wallet;
 
-
     @PrePersist
-    void onCreate () {
+    void onCreate() {
         if (createAt == null) {
             this.createAt = LocalDate.now();
         }
