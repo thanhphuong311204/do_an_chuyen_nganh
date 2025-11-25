@@ -4,7 +4,6 @@ import com.appQLCT.AppQLCT.dto.RecurringTransactionRequest;
 import com.appQLCT.AppQLCT.entity.core.RecurringTransaction;
 import com.appQLCT.AppQLCT.service.core.RecurringTransactionService;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +20,6 @@ public class RecurringTransactionController {
     @GetMapping
     public ResponseEntity<List<RecurringTransaction>> getAll() {
         return ResponseEntity.ok(recurringService.getAllByUser());
-        
     }
 
     @PostMapping
@@ -35,7 +33,6 @@ public class RecurringTransactionController {
         return ResponseEntity.noContent().build();
     }
 
-    // API test ngay lập tức
     @PostMapping("/run-now")
     public ResponseEntity<String> runRecurringNow() {
         recurringService.autoGenerateRecurringTransactions();
