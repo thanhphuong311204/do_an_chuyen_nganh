@@ -26,8 +26,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
     }
-
+    
     @Override
+    
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
@@ -36,27 +37,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String path = request.getServletPath();
 
-        // 1️⃣ Bỏ qua toàn bộ API public
-        if (path.startsWith("/api/auth") ||
-            path.startsWith("/api/categories")) {
+        // ✅ Bỏ qua toàn bộ API public và trang admin
+        if (path.startsWith("/api/auth")
+                || path.startsWith("/api/categories")
+                || path.startsWith("/admin/login")) {
+                System.out.println("Bypassing JWT for path: " + path);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2️⃣ Lấy Authorization header
         final String authHeader = request.getHeader("Authorization");
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // ❗ Nếu không có token → bỏ qua để SecurityConfig xử lý
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3️⃣ Lấy JWT từ header
         final String jwt = authHeader.substring(7).trim();
-
         if (jwt.isEmpty()) {
-            // ❗ Token trống → bỏ qua (không trả 403)
             filterChain.doFilter(request, response);
             return;
         }
@@ -70,27 +67,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 4️⃣ Không để trùng authentication
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userService.loadUserByUsername(userEmail);
 
             if (jwtUtil.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-
+                                userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-
-            } else {
-                System.out.println("❌ Token không hợp lệ hoặc hết hạn!");
             }
         }
 
-        // 5️⃣ Tiếp tục filter chain
         filterChain.doFilter(request, response);
     }
 }
