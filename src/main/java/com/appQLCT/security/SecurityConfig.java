@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -29,7 +30,11 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    // CORS full open
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
@@ -47,19 +52,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // JWT filter trước UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
-            // Tắt CSRF, dùng JWT
             .cors(cors -> {})
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
-
+                
                 // PUBLIC API
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                .requestMatchers(
+                        "/",
+                        "/admin/**",         // ✅ Cho phép toàn bộ /admin
+                        "/css/**",
+                        "/js/**",
+                        "/admin/login",
+                        "/images/**",
+                        "/api/auth/**",
+                        "/api/categories/**"
+                ).permitAll()
 
                 // PRIVATE API – cần JWT
                 .requestMatchers("/api/wallets/**").authenticated()
@@ -69,9 +81,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/budgets/**").authenticated()
                 .requestMatchers("/api/reports/**").authenticated()
                 .requestMatchers("/api/recurring/**").authenticated()
+         
 
                 // Mặc định: cần đăng nhập
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             );
 
         return http.build();

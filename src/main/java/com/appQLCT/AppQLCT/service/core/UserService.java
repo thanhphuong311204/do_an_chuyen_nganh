@@ -1,7 +1,6 @@
 package com.appQLCT.AppQLCT.service.core;
 
 import java.util.List;
-import java.util.Collections;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
