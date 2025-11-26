@@ -34,7 +34,6 @@ public class GoalController {
         return ResponseEntity.ok("Xóa mục tiêu thành công");
     }
 
-    // 🆕 ➕ Cập nhật tiến độ (Flutter gọi API này khi nhấn nút “Thêm tiến độ”)
     @PutMapping("/{id}/progress")
     public ResponseEntity<Goal> updateGoalProgress(
             @PathVariable Long id,

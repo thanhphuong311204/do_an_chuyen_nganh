@@ -28,22 +28,15 @@ public class RecurringTransactionService {
     private final ExpenseService expenseService;
     private final NotificationService notiService;
 
-    // =============================
-    // 🔵 Lấy recurring của user
-    // =============================
     public List<RecurringTransaction> getAllByUser() {
         User user = userService.getCurrentUser();
         return recurringRepo.findByUser(user);
     }
 
-    // =============================
-    // 🟢 Tạo giao dịch định kỳ
-    // =============================
     public RecurringTransaction createRecurring(RecurringTransactionRequest request) {
 
         User user = userService.getCurrentUser();
 
-        // 🧩 Lấy category
         Category category = null;
 
         if (request.getCategoryId() != null) {
@@ -63,12 +56,10 @@ public class RecurringTransactionService {
             throw new RuntimeException("Thiếu categoryId hoặc categoryName!");
         }
 
-        // 🧩 Lấy ví mặc định
         Wallet wallet = walletRepo.findByUser(user)
                 .stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("User chưa có ví!"));
 
-        // 🧩 Lưu recurring vào DB
         RecurringTransaction recurring = RecurringTransaction.builder()
                 .user(user)
                 .category(category)
@@ -82,7 +73,6 @@ public class RecurringTransactionService {
 
         RecurringTransaction saved = recurringRepo.save(recurring);
 
-        // 🔔 Gửi thông báo
         notiService.createNotification(
                 user,
                 "Tạo giao dịch định kỳ 🔁",
@@ -94,9 +84,6 @@ public class RecurringTransactionService {
         return saved;
     }
 
-    // =============================
-    // 🔴 Xoá
-    // =============================
     public void deleteRecurring(Long id) {
         RecurringTransaction r = recurringRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy recurring transaction!"));
@@ -111,9 +98,6 @@ public class RecurringTransactionService {
         );
     }
 
-    // =============================
-    // ⚡ Tự động chạy mỗi ngày
-    // =============================
     @Scheduled(cron = "0 0 0 * * *")
     public void autoGenerateRecurringTransactions() {
 
@@ -146,9 +130,6 @@ public class RecurringTransactionService {
         }
     }
 
-    // =============================
-    // 🔧 Hàm tính ngày tiếp theo
-    // =============================
     private LocalDate calculateNextDate(LocalDate date, String frequency) {
         return switch (frequency.toLowerCase()) {
             case "daily" -> date.plusDays(1);

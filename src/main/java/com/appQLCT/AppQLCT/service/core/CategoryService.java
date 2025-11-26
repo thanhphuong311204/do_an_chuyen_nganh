@@ -13,12 +13,10 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    // ✅ Lấy toàn bộ category
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
-    // ✅ Lấy category theo ID
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with ID: " + id));

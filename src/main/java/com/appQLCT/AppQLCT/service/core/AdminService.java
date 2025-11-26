@@ -16,18 +16,23 @@ public class AdminService {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-
     public User authenticateAdmin(String email, String password) {
+
         Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()) return null;
+        if (optionalUser.isEmpty()) {
+            return null;
+        }
 
         User user = optionalUser.get();
 
-        if (passwordEncoder.matches(password, user.getPasswordHash()) 
-                && "ADMIN".equalsIgnoreCase(user.getRole())) {
-            System.out.println("Ham oke");
+        boolean isPasswordMatch = passwordEncoder.matches(password, user.getPasswordHash());
+        boolean isAdmin = user.getRole() != null &&
+                          user.getRole().toUpperCase().contains("ADMIN");
+
+        if (isPasswordMatch && isAdmin) {
             return user;
         }
+
         return null;
     }
 }

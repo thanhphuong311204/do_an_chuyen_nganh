@@ -46,7 +46,6 @@ public class IncomeService {
 
         Income saved = incomeRepository.save(income);
 
-        // ✅ Cộng tiền vào ví
         if (wallet.getBalance() == null) wallet.setBalance(BigDecimal.ZERO);
         wallet.setBalance(wallet.getBalance().add(BigDecimal.valueOf(request.getAmount())));
         walletRepository.save(wallet);
@@ -66,7 +65,6 @@ public class IncomeService {
         Income deleted = incomeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thu nhập!"));
 
-        // ✅ Trừ lại số tiền khi xóa income
         Wallet wallet = deleted.getWallet();
         if (wallet != null) {
             wallet.setBalance(wallet.getBalance().subtract(deleted.getAmount()));

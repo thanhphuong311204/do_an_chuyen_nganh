@@ -12,7 +12,6 @@ public class SettingService {
     @Autowired
     private SettingRepository settingRepository;
 
-    // Lấy setting của user hoặc tạo mặc định
     public Setting getSetting(User user) {
         return settingRepository.findByUser(user)
                 .orElseGet(() -> settingRepository.save(
@@ -26,7 +25,6 @@ public class SettingService {
                 ));
     }
 
-    // Cập nhật setting
     public Setting updateSetting(User user, Setting newSetting) {
         Setting setting = getSetting(user);
         setting.setLanguage(newSetting.getLanguage());

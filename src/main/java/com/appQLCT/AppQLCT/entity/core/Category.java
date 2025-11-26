@@ -15,7 +15,7 @@ public class Category {
     private String categoryName;
 
     @Column(nullable = false)
-    private String type; // expense, income, goal
+    private String type; 
 
     @Column(name = "is_public", nullable = false)
     private boolean isPublic = true;
@@ -23,7 +23,6 @@ public class Category {
     @Column(name = "icon_url")
     private String iconUrl;
 
-    // Getters và Setters
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 

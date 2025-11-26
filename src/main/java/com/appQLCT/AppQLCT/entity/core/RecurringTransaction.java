@@ -44,7 +44,7 @@ public class RecurringTransaction {
     private String note;
 
     @Column(nullable = false)
-    private String frequency; // daily / weekly / monthly / yearly
+    private String frequency; 
 
     @Column(name = "next_date", nullable = false)
     private LocalDate nextDate;

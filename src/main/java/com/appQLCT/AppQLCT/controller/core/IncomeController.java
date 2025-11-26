@@ -34,7 +34,6 @@ public class IncomeController {
         User currentUser = userService.getCurrentUser();
         Income income = incomeService.createIncome(request, currentUser);
 
-        // ✅ Cập nhật số dư ví
         Wallet wallet = income.getWallet();
         if (wallet != null) {
             wallet.setBalance(wallet.getBalance().add(income.getAmount()));

@@ -25,20 +25,18 @@ public class Setting {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
-    // --- Cài đặt cơ bản ---
-    private String language; // vi, en,...
-    private String currency; // VND, USD,...
-    private Boolean darkMode; // chế độ tối
-    private Boolean notificationEnabled; // bật/tắt thông báo
+    private String language; 
+    private String currency; 
+    private Boolean darkMode; 
+    private Boolean notificationEnabled; 
 
-    // --- Cài đặt mở rộng ---
-    private String theme; // light, dark, custom
-    private String dateFormat; // dd/MM/yyyy, MM-dd-yyyy,...
-    private Long defaultWalletId; // ví mặc định khi thêm giao dịch
-    private Boolean showBalanceOnHome; // hiển thị số dư
-    private Boolean autoBackup; // bật sao lưu tự động
-    private String backupFrequency; // daily, weekly, monthly
-    private LocalTime reminderTime; // giờ nhắc nhở ghi chi tiêu
-    private Boolean budgetAlertEnabled; // bật/tắt cảnh báo ngân sách
-    private Double budgetThreshold; // % cảnh báo ngân sách
+    private String theme; 
+    private String dateFormat; 
+    private Long defaultWalletId;
+    private Boolean showBalanceOnHome; 
+    private Boolean autoBackup; 
+    private String backupFrequency; 
+    private LocalTime reminderTime;
+    private Boolean budgetAlertEnabled; 
+    private Double budgetThreshold; 
 }

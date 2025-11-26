@@ -21,7 +21,6 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @Param("end") LocalDate end
     );
 
-    // ✅ Tính tổng chi theo danh mục trong khoảng thời gian ngân sách
     @Query("""
         SELECT SUM(e.amount) FROM Expense e 
         WHERE e.user.id = :userId 
@@ -35,7 +34,6 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @Param("end") LocalDate end
     );
 
-    // ✅ Nếu ngân sách có ví cụ thể → tính tổng chi của danh mục đó trong ví đó
     @Query("""
         SELECT SUM(e.amount) FROM Expense e 
         WHERE e.user.id = :userId 

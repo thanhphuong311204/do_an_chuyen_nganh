@@ -24,7 +24,6 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ✅ Đăng ký tài khoản mới
     public User registerUser(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email đã tồn tại");
@@ -56,21 +55,14 @@ public class UserService implements UserDetailsService {
 
         System.out.println("=== DEBUG CURRENT USER ===");
         if (authentication == null) {
-            System.out.println("❌ authentication = null");
             throw new RuntimeException("Không có Authentication trong context!");
         }
-
-        System.out.println("Auth class: " + authentication.getClass().getName());
-        System.out.println("Principal: " + authentication.getPrincipal());
-        System.out.println("Name: " + authentication.getName());
-        System.out.println("Authorities: " + authentication.getAuthorities());
 
         if (!authentication.isAuthenticated()) {
             throw new RuntimeException("Người dùng chưa xác thực!");
         }
 
         String email = authentication.getName();
-        System.out.println("🟢 Lấy user từ email: " + email);
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy user với email: " + email));

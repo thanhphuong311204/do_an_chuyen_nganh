@@ -8,7 +8,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {
-        // ✅ Cấu hình cho Thymeleaf hoặc HTML
         registry.jsp("/templates/", ".html");
     }
 }

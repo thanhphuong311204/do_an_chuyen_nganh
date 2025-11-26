@@ -54,12 +54,10 @@ private Long goalId;
     @Column(name = "start_date")
     private LocalDate startDate;
 
-    // 🕒 Thêm dòng này
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // 🔹 Quan hệ
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "user_id", nullable = false)

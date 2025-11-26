@@ -37,17 +37,14 @@ public class Wallet {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // ✅ Khi xóa ví → xóa luôn mọi expense liên quan
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference // 💡 Ngắt vòng lặp JSON (cha của Expense)
+    @JsonManagedReference 
     private List<Expense> expenses;
 
-    // ✅ Khi xóa ví → xóa luôn mọi income liên quan (nếu có)
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference // 💡 Ngắt vòng lặp JSON (cha của Income)
+    @JsonManagedReference 
     private List<Income> incomes;
 
-    // 👤 Chủ sở hữu ví
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnoreProperties({"wallets", "expenses", "incomes", "hibernateLazyInitializer", "handler"})

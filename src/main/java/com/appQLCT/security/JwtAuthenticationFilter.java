@@ -37,7 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String path = request.getServletPath();
 
-        // ✅ Bỏ qua toàn bộ API public và trang admin
         if (path.startsWith("/api/auth")
                 || path.startsWith("/api/categories")
                 || path.startsWith("/admin/login")) {

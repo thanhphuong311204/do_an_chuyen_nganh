@@ -13,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Chatbox extends BaseEntity {  // ✅ Kế thừa BaseEntity
+public class Chatbox extends BaseEntity {  
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,5 +29,5 @@ public class Chatbox extends BaseEntity {  // ✅ Kế thừa BaseEntity
     private String message;
 
     @Column(nullable = false)
-    private String sender; // user hoặc bot
+    private String sender; 
 }

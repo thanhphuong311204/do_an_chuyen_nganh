@@ -38,18 +38,14 @@ public class CategoryController {
     @PostMapping("/upload/{id}")
     public ResponseEntity<?> uploadCategoryIcon(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         try {
-            // 1️⃣ Upload lên Cloudinary
             String imageUrl = cloudinaryService.uploadFile(file);
 
-            // 2️⃣ Tìm category theo ID
             Category category = categoryRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy category có ID: " + id));
 
-            // 3️⃣ Cập nhật link ảnh vào cột icon
             category.setIconUrl(imageUrl);
             categoryRepository.save(category);
 
-            // 4️⃣ Trả về JSON kết quả
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Upload thành công!");
             response.put("categoryId", category.getCategoryId());
