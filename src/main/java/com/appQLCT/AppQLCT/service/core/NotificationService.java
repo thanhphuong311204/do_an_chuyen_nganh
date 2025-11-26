@@ -16,12 +16,10 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
-    // 🟢 Lấy tất cả thông báo theo user
     public List<Notification> getUserNotifications(User user) {
         return notificationRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
-    // 🟡 Đánh dấu 1 thông báo đã đọc
     public void markAsRead(Long id) {
         Notification noti = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông báo"));
@@ -29,7 +27,6 @@ public class NotificationService {
         notificationRepository.save(noti);
     }
 
-    // ⭐ ĐÁNH DẤU TẤT CẢ ĐÃ ĐỌC ⭐
     public void markAllAsRead(User user) {
         List<Notification> list = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         list.forEach(n -> n.setIsRead(true));
@@ -57,7 +54,6 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    // 🔴 Xóa thông báo
     public void deleteNotification(Long id) {
         notificationRepository.deleteById(id);
     }

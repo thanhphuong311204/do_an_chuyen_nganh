@@ -59,12 +59,11 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 
-                // PUBLIC API
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers(
                         "/",
-                        "/admin/**",         // ✅ Cho phép toàn bộ /admin
+                        "/admin/**",         
                         "/css/**",
                         "/js/**",
                         "/admin/login",
@@ -73,7 +72,6 @@ public class SecurityConfig {
                         "/api/categories/**"
                 ).permitAll()
 
-                // PRIVATE API – cần JWT
                 .requestMatchers("/api/wallets/**").authenticated()
                 .requestMatchers("/api/expenses/**").authenticated()
                 .requestMatchers("/api/incomes/**").authenticated()
@@ -83,7 +81,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/recurring/**").authenticated()
          
 
-                // Mặc định: cần đăng nhập
                 .anyRequest().permitAll()
             );
 

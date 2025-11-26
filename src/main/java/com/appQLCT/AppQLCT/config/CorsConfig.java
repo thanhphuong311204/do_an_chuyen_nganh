@@ -13,17 +13,13 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Cho phép tất cả origin (phục vụ Flutter web, localhost)
         config.addAllowedOriginPattern("*");
 
-        // ✅ Cho phép tất cả header và method
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 
-        // ✅ Cho phép gửi cookie/token nếu cần
         config.setAllowCredentials(true);
 
-        // ✅ Áp dụng cho tất cả endpoint
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 

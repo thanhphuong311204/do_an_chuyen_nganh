@@ -43,7 +43,7 @@ public class Expense {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id")
-    @JsonBackReference // ✅ Cắt vòng lặp JSON (Expense -> Wallet -> Expense -> ...)
+    @JsonBackReference 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
     private Wallet wallet;
 

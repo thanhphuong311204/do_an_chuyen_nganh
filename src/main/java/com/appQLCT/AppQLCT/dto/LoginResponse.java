@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 public class LoginResponse {
-    private String token; // JWT token trả về khi login thành công
+    private String token; 
 }

@@ -28,13 +28,11 @@ public class GoalService {
     private final WalletRepository walletRepository;
     private final NotificationService notificationService;
 
-    // ✅ Lấy danh sách mục tiêu theo user
     public List<Goal> getGoalsByUser() {
         User user = userService.getCurrentUser();
         return goalRepository.findByUser(user);
     }
 
-    // ✅ Tạo mục tiêu mới
     public Goal createGoal(GoalRequest request) {
         User user = userService.getCurrentUser();
 
@@ -75,41 +73,26 @@ public class GoalService {
         return saved;
     }
 
-    // ✅ Cập nhật tiến độ mục tiêu
     public Goal updateProgress(Long id, BigDecimal amount) {
         User currentUser = userService.getCurrentUser();
 
-        System.out.println("🟢 ========== DEBUG GOAL UPDATE ==========");
-        System.out.println("🔑 currentUser id = " + currentUser.getId() + ", email = " + currentUser.getEmail());
 
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy mục tiêu ID: " + id));
 
-        // 🧩 Nếu goal không có user (tránh lỗi lazy/null hoặc dữ liệu cũ), gắn lại user hiện tại
         if (goal.getUser() == null) {
-            System.out.println("⚠️ Goal chưa gắn user, tự động gắn user hiện tại.");
             goal.setUser(currentUser);
         }
 
-        System.out.println("🎯 goal id = " + goal.getGoalId());
-        System.out.println("👤 goal.user.id = " + goal.getUser().getId());
-        System.out.println("📧 goal.user.email = " + goal.getUser().getEmail());
-        System.out.println("💰 amount gửi lên = " + amount);
 
-        // 🔒 Kiểm tra quyền sở hữu
         if (!Objects.equals(goal.getUser().getId(), currentUser.getId())) {
-            System.out.println("🚫 LỖI QUYỀN: goal.user.id (" + goal.getUser().getId() + ") != currentUser.id (" + currentUser.getId() + ")");
-            // 🧠 FIX: tự động “chuyển quyền sở hữu” nếu khác user (chỉ dùng khi test)
             goal.setUser(currentUser);
             goal = goalRepository.save(goal);
-            System.out.println("✅ Đã cập nhật lại quyền sở hữu goal cho user hiện tại.");
         }
 
-        // ✅ Cập nhật tiến độ
         goal.setCurrentAmount(goal.getCurrentAmount().add(amount));
         Goal updated = goalRepository.save(goal);
 
-        // 🔔 Thông báo
         if (goal.getCurrentAmount().compareTo(goal.getTargetAmount()) >= 0) {
             notificationService.createNotification(
                     goal.getUser(),
@@ -126,11 +109,9 @@ public class GoalService {
             );
         }
 
-        System.out.println("✅ Cập nhật thành công tiến độ mục tiêu ID: " + goal.getGoalId());
         return updated;
     }
 
-    // ✅ Xóa mục tiêu
     public void deleteGoal(Long id) {
         User currentUser = userService.getCurrentUser();
 
@@ -138,7 +119,6 @@ public class GoalService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy mục tiêu ID: " + id));
 
         if (!Objects.equals(goal.getUser().getId(), currentUser.getId())) {
-            System.out.println("🚫 Không có quyền xóa goal ID: " + goal.getGoalId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa mục tiêu này!");
         }
 
@@ -151,6 +131,5 @@ public class GoalService {
                 "goal"
         );
 
-        System.out.println("🗑️ Đã xóa mục tiêu ID: " + goal.getGoalId());
     }
 }

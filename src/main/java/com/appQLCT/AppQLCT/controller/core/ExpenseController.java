@@ -34,7 +34,6 @@ public class ExpenseController {
         User currentUser = userService.getCurrentUser();
         Expense expense = expenseService.createExpense(request, currentUser);
 
-        // ✅ Cập nhật trừ tiền ví
         Wallet wallet = expense.getWallet();
         if (wallet != null) {
             wallet.setBalance(wallet.getBalance().subtract(expense.getAmount()));

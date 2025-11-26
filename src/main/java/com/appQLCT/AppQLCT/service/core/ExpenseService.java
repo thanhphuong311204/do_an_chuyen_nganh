@@ -22,12 +22,10 @@ public class ExpenseService {
     private final BudgetRepository budgetRepository;
     private final BudgetService budgetService;
 
-    // ✅ Lấy danh sách chi tiêu của user
     public List<Expense> getExpensesByUser(User user) {
         return expenseRepository.findByUser(user);
     }
 
-    // ✅ Tạo chi tiêu mới
     public Expense createExpense(ExpenseRequest request, User user) {
 
         Wallet wallet = walletRepository.findById(request.getWalletId())
@@ -47,12 +45,10 @@ public class ExpenseService {
 
         Expense saved = expenseRepository.save(expense);
 
-        // ✅ Trừ tiền trong ví
         if (wallet.getBalance() == null) wallet.setBalance(BigDecimal.ZERO);
         wallet.setBalance(wallet.getBalance().subtract(BigDecimal.valueOf(request.getAmount())));
         walletRepository.save(wallet);
 
-        // ✅ Gửi thông báo chi tiêu
         notificationService.createNotification(
                 user,
                 "Thêm chi tiêu mới 💸",
@@ -61,13 +57,11 @@ public class ExpenseService {
                 "transaction"
         );
 
-        // ✅ Cập nhật ngân sách liên quan
         updateRelatedBudgets(user, category, wallet);
 
         return saved;
     }
 
-    // ✅ Cập nhật chi tiêu
     public Expense updateExpense(Long id, ExpenseRequest request, User user) {
         Expense existing = expenseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiêu!"));
@@ -97,7 +91,6 @@ public class ExpenseService {
         return updated;
     }
 
-    // ✅ Xoá chi tiêu
 public void deleteExpense(Long id) {
     Expense deleted = expenseRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiêu!"));
@@ -106,19 +99,15 @@ public void deleteExpense(Long id) {
     Category category = deleted.getCategory();
     User user = deleted.getUser();
 
-    // ✅ Hoàn lại tiền ví
     if (wallet != null) {
         wallet.setBalance(wallet.getBalance().add(deleted.getAmount()));
         walletRepository.save(wallet);
     }
 
-    // ✅ Xóa chi tiêu
     expenseRepository.deleteById(id);
 
-    // ✅ Cập nhật lại ngân sách (tự động trừ lại phần chi bị xóa)
     updateRelatedBudgets(user, category, wallet);
 
-    // ✅ Gửi thông báo
     notificationService.createNotification(
             user,
             "Xóa chi tiêu ❌",
@@ -126,7 +115,6 @@ public void deleteExpense(Long id) {
             "transaction"
     );
 }
-    // ✅ Cập nhật ngân sách (đã fix lỗi getId)
     private void updateRelatedBudgets(User user, Category category, Wallet wallet) {
         List<Budget> budgets = budgetRepository.findByUser(user);
 

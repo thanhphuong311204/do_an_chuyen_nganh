@@ -18,21 +18,18 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final UserService userService;
 
-    // 🟢 Lấy danh sách thông báo của user
     @GetMapping
     public List<Notification> getUserNotifications() {
         User currentUser = userService.getCurrentUser();
         return notificationService.getUserNotifications(currentUser);
     }
 
-    // 🟡 Đánh dấu 1 thông báo đã đọc
     @PutMapping("/{id}/read")
     public ResponseEntity<?> markAsRead(@PathVariable Long id) {
         notificationService.markAsRead(id);
         return ResponseEntity.ok().build();
     }
 
-    // ⭐ ĐÁNH DẤU TẤT CẢ ĐÃ ĐỌC ⭐
     @PutMapping("/read-all")
     public ResponseEntity<?> markAllAsRead() {
         User currentUser = userService.getCurrentUser();
@@ -40,7 +37,6 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    // 🔴 Xóa thông báo
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);

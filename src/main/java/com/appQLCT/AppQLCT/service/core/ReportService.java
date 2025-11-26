@@ -20,14 +20,12 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final ExpenseRepository expenseRepository;
     private final IncomeRepository incomeRepository;
-    private final NotificationService notificationService; // ✅ thêm vào
+    private final NotificationService notificationService; 
 
-    // ✅ Lấy tất cả report của user hiện tại
     public List<Report> getReports(User user) {
         return reportRepository.findByUser(user);
     }
 
-    // ✅ Sinh báo cáo mới
     public Report generateReport(User user, ReportRequest req) {
         LocalDate start = req.getStartDate();
         LocalDate end = req.getEndDate();
@@ -48,7 +46,6 @@ public class ReportService {
 
         Report saved = reportRepository.save(report);
 
-        // 🔔 Gửi thông báo khi tạo báo cáo mới
         notificationService.createNotification(
                 user,
                 "Báo cáo tài chính 📊",

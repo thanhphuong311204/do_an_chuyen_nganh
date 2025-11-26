@@ -18,7 +18,6 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 👇 Đây là chỗ quan trọng: thêm quyền cho Spring Security
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
     }
 
