@@ -68,7 +68,7 @@ public class RecurringTransactionService {
                 .amount(request.getAmount())
                 .note(request.getNote())
                 .frequency(request.getFrequency())
-                .nextDate(request.getNextDate())
+                .nextDate(calculateNextDate(LocalDate.now(), request.getFrequency()))
                 .build();
 
         RecurringTransaction saved = recurringRepo.save(recurring);

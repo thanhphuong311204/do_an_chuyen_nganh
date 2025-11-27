@@ -51,4 +51,12 @@ public class User {
 
     @Column(name = "created_at", updatable = false, insertable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "full_name")
+    private String fullName;
+
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
 }
