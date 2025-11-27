@@ -16,12 +16,11 @@ public class CloudinaryService {
 
     public CloudinaryService() {
         this.cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", "dofpypbi9",
-                "api_key", "431576587161232",
-                "api_secret", "IBD02yVTZSEtVl_MsrNFG_xLYkk"
+                "cloud_name", "db8jojttc",
+                "api_key", "461614395486381",
+                "api_secret", "Agz4iwJths6U7pOH6todumkRfp8"
         ));
     }
-
     public String uploadFile(MultipartFile file) throws IOException {
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                 ObjectUtils.asMap("resource_type", "auto"));
