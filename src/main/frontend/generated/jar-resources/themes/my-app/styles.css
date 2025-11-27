@@ -1,0 +1,82 @@
+[theme~="my-app"] {
+    --lumo-primary-color: #007bff;
+    --lumo-primary-text-color: #ffffff;
+    --lumo-secondary-text-color: #6c757d;
+    --lumo-body-text-color: #212529;
+    --lumo-contrast-10pct: rgba(0, 123, 255, 0.1);
+    --lumo-contrast-20pct: rgba(0, 123, 255, 0.2);
+    --lumo-contrast-30pct: rgba(0, 123, 255, 0.3);
+    --lumo-contrast-40pct: rgba(0, 123, 255, 0.4);
+    --lumo-contrast-50pct: rgba(0, 123, 255, 0.5);
+    --lumo-contrast-60pct: rgba(0, 123, 255, 0.6);
+    --lumo-contrast-70pct: rgba(0, 123, 255, 0.7);
+    --lumo-contrast-80pct: rgba(0, 123, 255, 0.8);
+    --lumo-contrast-90pct: rgba(0, 123, 255, 0.9);
+}
+
+.my-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.my-card:hover {
+    transform: translateY(-5px);
+}
+
+.my-card h3 {
+    color: #f8f9fa;
+}
+
+.my-card p {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.sidebar-link {
+    display: block;
+    padding: 12px 20px;
+    color: #adb5bd;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-link:hover {
+    background-color: #495057;
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+.grid-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    border: 1px solid #e9ecef;
+}
+
+.add-button {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-dialog {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    border: none;
+}
+
+.form-dialog .vaadin-form-layout {
+    padding: 20px;
+}
