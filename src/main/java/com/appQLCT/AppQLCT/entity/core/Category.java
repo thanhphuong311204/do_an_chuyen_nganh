@@ -15,7 +15,7 @@ public class Category {
     private String categoryName;
 
     @Column(nullable = false)
-    private String type; 
+    private String type;
 
     @Column(name = "is_public", nullable = false)
     private boolean isPublic = true;
@@ -33,7 +33,7 @@ public class Category {
     public void setType(String type) { this.type = type; }
 
     public boolean isPublic() { return isPublic; }
-    public void setPublic(boolean isPublic) { this.isPublic = isPublic; }
+    public void setIsPublic(boolean isPublic) { this.isPublic = isPublic; }
 
     public String getIconUrl() { return iconUrl; }
     public void setIconUrl(String iconUrl) { this.iconUrl = iconUrl; }

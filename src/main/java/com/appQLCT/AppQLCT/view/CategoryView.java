@@ -3,6 +3,7 @@ package com.appQLCT.AppQLCT.view;
 import com.appQLCT.AppQLCT.entity.core.Category;
 import com.appQLCT.AppQLCT.repository.core.CategoryRepository;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -11,7 +12,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CategoryView extends VerticalLayout {
 
     private final CategoryRepository categoryRepository;
-    private Grid<Category> grid = new Grid<>(Category.class);
-    private Binder<Category> binder = new Binder<>(Category.class);
+    private final Grid<Category> grid = new Grid<>(Category.class);
+    private final Binder<Category> binder = new Binder<>(Category.class);
 
     @Autowired
     public CategoryView(CategoryRepository categoryRepository) {
@@ -38,15 +38,23 @@ public class CategoryView extends VerticalLayout {
         updateList();
     }
 
+    /**
+     * Cấu hình bảng hiển thị danh sách danh mục
+     */
     private void configureGrid() {
-        grid.setColumns("categoryId", "categoryName", "type", "isPublic", "iconUrl");
+        // Quan trọng: với boolean getter là isPublic() thì property name là "public"
+        grid.setColumns("categoryId", "categoryName", "type", "public", "iconUrl");
+
         grid.addComponentColumn(category -> {
             Button editButton = new Button("Sửa", e -> openCategoryDialog(category));
             Button deleteButton = new Button("Xóa", e -> deleteCategory(category));
             return new HorizontalLayout(editButton, deleteButton);
-        });
+        }).setHeader("Thao tác");
     }
 
+    /**
+     * Mở dialog để thêm/sửa danh mục
+     */
     private void openCategoryDialog(Category category) {
         Dialog dialog = new Dialog();
         FormLayout form = new FormLayout();
@@ -56,10 +64,18 @@ public class CategoryView extends VerticalLayout {
         Checkbox isPublicField = new Checkbox("Công khai");
         TextField iconUrlField = new TextField("URL biểu tượng");
 
-        binder.bind(categoryNameField, Category::getCategoryName, Category::setCategoryName);
-        binder.bind(typeField, Category::getType, Category::setType);
-        binder.bind(isPublicField, Category::isPublic, Category::setPublic);
-        binder.bind(iconUrlField, Category::getIconUrl, Category::setIconUrl);
+        // Dùng forField() thay vì bind() để Vaadin hiểu rõ kiểu dữ liệu của component
+        binder.forField(categoryNameField)
+                .bind(Category::getCategoryName, Category::setCategoryName);
+
+        binder.forField(typeField)
+                .bind(Category::getType, Category::setType);
+
+        binder.forField(isPublicField)
+                .bind(Category::isPublic, Category::setIsPublic);
+
+        binder.forField(iconUrlField)
+                .bind(Category::getIconUrl, Category::setIconUrl);
 
         binder.setBean(category);
 
@@ -72,21 +88,31 @@ public class CategoryView extends VerticalLayout {
         dialog.open();
     }
 
+    /**
+     * Lưu danh mục vào database
+     */
     private void saveCategory(Category category, Dialog dialog) {
         try {
             categoryRepository.save(category);
             updateList();
             dialog.close();
-            Notification.show("Lưu thành công");
+            Notification.show("Lưu thành công", 3000, Notification.Position.MIDDLE);
         } catch (Exception e) {
-            Notification.show("Lỗi: " + e.getMessage());
+            Notification.show("Lỗi khi lưu: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
         }
     }
 
+    /**
+     * Xóa danh mục
+     */
     private void deleteCategory(Category category) {
-        categoryRepository.delete(category);
-        updateList();
-        Notification.show("Xóa thành công");
+        try {
+            categoryRepository.delete(category);
+            updateList();
+            Notification.show("Xóa thành công", 3000, Notification.Position.MIDDLE);
+        } catch (Exception e) {
+            Notification.show("Lỗi khi xóa: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
+        }
     }
 
     private void updateList() {

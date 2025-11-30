@@ -39,7 +39,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (path.startsWith("/api/auth")
                 || path.startsWith("/api/categories")
-                || path.startsWith("/admin/login")) {
+                || path.startsWith("/admin/login")
+                || path.startsWith("/api/ai")
+) {
                 System.out.println("Bypassing JWT for path: " + path);
             filterChain.doFilter(request, response);
             return;
