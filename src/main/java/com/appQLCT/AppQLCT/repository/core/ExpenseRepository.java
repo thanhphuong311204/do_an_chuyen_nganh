@@ -14,17 +14,23 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     List<Expense> findByUser(User user);
 
-    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.createAt BETWEEN :start AND :end")
+    // =============== 1) Tổng chi theo user trong khoảng ngày ===============
+    @Query("""
+        SELECT SUM(e.amount) FROM Expense e
+        WHERE e.user.id = :userId
+          AND e.createAt BETWEEN :start AND :end
+    """)
     BigDecimal sumByUserAndDateRange(
             @Param("userId") Long userId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
     );
 
+    // =============== 2) Tổng chi theo user + category ======================
     @Query("""
-        SELECT SUM(e.amount) FROM Expense e 
-        WHERE e.user.id = :userId 
-          AND e.category.id = :categoryId 
+        SELECT SUM(e.amount) FROM Expense e
+        WHERE e.user.id = :userId
+          AND e.category.id = :categoryId
           AND e.createAt BETWEEN :start AND :end
     """)
     BigDecimal sumByCategoryAndDateRange(
@@ -34,11 +40,12 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @Param("end") LocalDate end
     );
 
+    // =============== 3) Tổng chi theo user + category + wallet =============
     @Query("""
-        SELECT SUM(e.amount) FROM Expense e 
-        WHERE e.user.id = :userId 
-          AND e.category.id = :categoryId 
-          AND e.wallet.id = :walletId 
+        SELECT SUM(e.amount) FROM Expense e
+        WHERE e.user.id = :userId
+          AND e.category.id = :categoryId
+          AND e.wallet.id = :walletId
           AND e.createAt BETWEEN :start AND :end
     """)
     BigDecimal sumByCategoryAndWalletAndDateRange(

@@ -64,7 +64,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/ai/**").permitAll()
                 .requestMatchers(
                         "/",
-                        "/admin/**",         
+                        "/admin/**", 
+                        "/api/ai/**",        
                         "/css/**",
                         "/js/**",
                         "/admin/login",
