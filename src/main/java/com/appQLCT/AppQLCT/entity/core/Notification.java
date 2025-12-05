@@ -1,6 +1,8 @@
 package com.appQLCT.AppQLCT.entity.core;
 
 import com.appQLCT.AppQLCT.entity.authentic.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -20,6 +22,8 @@ public class Notification {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"notifications"}) 
+    @JsonIgnore 
     private User user;
 
     private String notificationTitle;

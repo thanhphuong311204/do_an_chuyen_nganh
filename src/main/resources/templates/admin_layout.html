@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Admin Panel</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body { font-family: "Poppins", sans-serif; }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="w-64 bg-white h-screen shadow-md fixed left-0 top-0">
+        <h1 class="text-2xl font-semibold text-gray-800 px-6 py-6 border-b">
+            Admin Panel
+        </h1>
+
+        <nav class="mt-4 space-y-1">
+
+            <a href="/admin/dashboard"
+               th:classappend="${active}=='dashboard' ? 'bg-gray-100 text-blue-600' : ''"
+               class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition">
+                📚 <span class="ml-2">Dashboard tổng quan</span>
+            </a>
+
+            <a href="/admin/users"
+               th:classappend="${active}=='users' ? 'bg-gray-100 text-blue-600' : ''"
+               class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition">
+                👥 <span class="ml-2">Quản lý người dùng</span>
+            </a>
+
+            <a href="/admin/categories"
+               th:classappend="${active}=='categories' ? 'bg-gray-100 text-blue-600' : ''"
+               class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition">
+                📁 <span class="ml-2">Quản lý danh mục</span>
+            </a>
+
+            <a href="/admin/notifications"
+               th:classappend="${active}=='notifications' ? 'bg-gray-100 text-blue-600' : ''"
+               class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition">
+                🔔 <span class="ml-2">Thông báo FCM</span>
+            </a>
+
+            <a href="/admin/goals"
+               th:classappend="${active}=='goals' ? 'bg-gray-100 text-blue-600' : ''"
+               class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition">
+                🎯 <span class="ml-2">Mục tiêu hệ thống</span>
+            </a>
+
+            <a href="/logout"
+               class="flex items-center px-6 py-3 text-gray-700 hover:bg-red-100 hover:text-red-500 rounded-md transition">
+                📘 <span class="ml-2">Đăng xuất</span>
+            </a>
+
+        </nav>
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="ml-64 w-full p-10">
+        <div th:replace="~{${page} :: content}"></div>
+    </main>
+
+</div>
+
+</body>
+</html>

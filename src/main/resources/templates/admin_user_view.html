@@ -1,0 +1,22 @@
+<div th:fragment="content">
+
+    <h1><i class="fa-solid fa-user"></i> Thông tin người dùng</h1>
+
+    <div style="background:white;padding:25px;border-radius:12px;max-width:500px;
+                box-shadow:0 3px 10px rgba(0,0,0,0.1);">
+
+        <p><b>ID:</b> <span th:text="${user.id}"></span></p>
+        <p><b>Email:</b> <span th:text="${user.email}"></span></p>
+        <p><b>Trạng thái:</b>
+            <span th:text="${user.active} ? 'Đang hoạt động' : 'Đã khóa'"></span>
+        </p>
+
+        <br>
+
+        <a href="/admin/users"
+           style="padding:10px 18px;background:#64748b;color:white;border-radius:6px;text-decoration:none;">
+            ← Quay lại
+        </a>
+    </div>
+
+</div>

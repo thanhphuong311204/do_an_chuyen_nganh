@@ -1,0 +1,39 @@
+<div th:fragment="content">
+
+    <h1 class="text-3xl font-semibold text-gray-900 mb-8">
+        Dashboard tổng quan
+    </h1>
+
+    <div id="stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <script>
+        fetch("/api/admin/stats/overview")
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("stats").innerHTML = `
+                    ${card("Tổng người dùng", data.totalUsers, "👥")}
+                    ${card("Tổng số ví", data.totalWallets, "💼")}
+                    ${card("Tổng thu", formatMoney(data.totalIncome), "🪙")}
+                    ${card("Tổng chi", formatMoney(data.totalExpense), "💸")}
+                    ${card("Mục tiêu", data.totalGoals, "🎯")}
+                    ${card("Giao dịch định kỳ", data.totalRecurring, "🔄")}
+                `;
+            });
+
+        function card(title, value, icon) {
+            return `
+                <div class="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                    <p class="text-gray-500 text-sm flex items-center gap-2">
+                        <span class="text-xl">${icon}</span> ${title}
+                    </p>
+                    <h2 class="text-3xl font-bold text-gray-800 mt-2">${value}</h2>
+                </div>
+            `;
+        }
+
+        function formatMoney(num) {
+            return num.toLocaleString("vi-VN") + " đ";
+        }
+    </script>
+
+</div>

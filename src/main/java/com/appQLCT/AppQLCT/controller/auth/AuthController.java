@@ -35,20 +35,25 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+         System.out.println("Login request: " + loginRequest.getEmail());
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(),
                 loginRequest.getPassword()
+                
             )
+            
         );
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String token = jwtUtil.generateToken(userDetails);
         return ResponseEntity.ok(new LoginResponse(token));
+        
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+        
         try {
             User user = userService.registerUser(registerRequest);
             Map<String, Object> response = new HashMap<>();
@@ -61,4 +66,5 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+    
 }

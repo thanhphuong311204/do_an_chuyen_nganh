@@ -1,0 +1,238 @@
+<div th:fragment="content">
+
+    <!-- ===================================================== -->
+    <!-- 🔹 PHẦN 1: SLIDE-IN PANEL HIỂN THỊ CHI TIẾT NGƯỜI DÙNG -->
+    <!-- ===================================================== -->
+    <div id="userDetailPanel"
+        class="fixed top-0 right-0 w-96 bg-white h-full shadow-lg transform translate-x-full transition-transform duration-300 z-[9999]">
+
+        <div class="p-6 border-b flex justify-between items-center">
+            <h2 class="text-xl font-semibold">Chi tiết người dùng</h2>
+            <button onclick="closeDetail()" class="text-gray-500 hover:text-gray-800">✖</button>
+        </div>
+
+        <div id="detailContent" class="p-6 space-y-3 text-gray-700">
+            <!-- Nội dung chi tiết người dùng sẽ được load vào đây -->
+        </div>
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- 🔹 PHẦN 2: MODAL FORM THÊM NGƯỜI DÙNG MỚI (ẨN MẶC ĐỊNH) -->
+    <!-- ===================================================== -->
+    <div id="addUserModal"
+        class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden z-[99999]">
+        <div class="bg-white rounded-lg p-6 w-96 shadow-lg">
+            <h3 class="text-xl font-semibold mb-4">Thêm người dùng mới</h3>
+
+            <!-- Ô nhập thông tin -->
+            <div class="space-y-3">
+                <input id="newUserName" type="text" placeholder="Tên đăng nhập"
+                    class="w-full border px-3 py-2 rounded" />
+                <input id="newEmail" type="email" placeholder="Email" class="w-full border px-3 py-2 rounded" />
+                <input id="newPhone" type="text" placeholder="Số điện thoại" class="w-full border px-3 py-2 rounded" />
+                <input id="newName" type="text" placeholder="Họ tên" class="w-full border px-3 py-2 rounded" />
+                <input type="password" placeholder="Mật khẩu" name="password" class="w-full border px-3 py-2 rounded" />
+
+            </div>
+
+            <!-- Nút hành động -->
+            <div class="flex justify-end gap-2 mt-4">
+                <button onclick="closeAddUserForm()" class="px-3 py-1 bg-gray-200 rounded">Hủy</button>
+                <button onclick="saveUser()" class="px-3 py-1 bg-blue-600 text-white rounded">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- 🔹 PHẦN 3: TIÊU ĐỀ + NÚT THÊM NGƯỜI DÙNG -->
+    <!-- ===================================================== -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-semibold text-gray-900">Quản lý người dùng</h1>
+
+        <!-- Nút thêm người dùng nằm ở góc phải -->
+        <button onclick="openAddUserForm()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            + Thêm người dùng
+        </button>
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- 🔹 PHẦN 4: BẢNG DANH SÁCH NGƯỜI DÙNG -->
+    <!-- ===================================================== -->
+    <div class="bg-white p-6 rounded-xl shadow">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="text-gray-600 border-b">
+                    <th class="py-3">ID</th>
+                    <th class="py-3">Email</th>
+                    <th class="py-3">Trạng thái</th>
+                    <th class="py-3">Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- 🔹 PHẦN 5: SCRIPT XỬ LÝ LOGIC -->
+    <!-- ===================================================== -->
+    <script>
+        // Tải danh sách người dùng khi load trang
+        loadUsers();
+
+        // ------------------------------
+        // 🧩 HÀM 1: Load danh sách người dùng
+        // ------------------------------
+        function loadUsers() {
+            fetch("/api/admin/users")
+                .then(res => res.json())
+                .then(users => {
+                    const tbody = document.getElementById("userTableBody");
+                    tbody.innerHTML = "";
+
+                    users.forEach(u => {
+                        tbody.innerHTML += `
+                            <tr class="border-b">
+                                <td class="py-3">${u.id}</td>
+                                <td>${u.email}</td>
+                                <td>
+                                    ${u.active ?
+                                '<span class="text-green-600 font-medium">Đang hoạt động</span>' :
+                                '<span class="text-red-600 font-medium">Đã khóa</span>'}
+                                </td>
+                                <td class="py-3 flex gap-2">
+
+                                    <!-- Nút xem -->
+                                    <button onclick="openDetail(${u.id})"
+                                        class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                                        Xem
+                                    </button>
+
+                                    <!-- Nút khóa / mở khóa -->
+                                    ${u.active
+                                ? `<button onclick="banUser(${u.id})"
+                                            class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">
+                                                Khóa
+                                           </button>`
+                                : `<button onclick="unbanUser(${u.id})"
+                                            class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">
+                                                Mở khóa
+                                           </button>`
+                            }
+                                </td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(err => console.error("Lỗi tải người dùng:", err));
+        }
+
+        // ------------------------------
+        // 🧩 HÀM 2: Khóa người dùng
+        // ------------------------------
+        function banUser(id) {
+            fetch(`/api/admin/users/${id}/ban`, { method: "PUT" })
+                .then(() => loadUsers());
+        }
+
+        // ------------------------------
+        // 🧩 HÀM 3: Mở khóa người dùng
+        // ------------------------------
+        function unbanUser(id) {
+            fetch(`/api/admin/users/${id}/unban`, { method: "PUT" })
+                .then(() => loadUsers());
+        }
+
+        // ------------------------------
+        // 🧩 HÀM 4: Mở panel chi tiết người dùng
+        // ------------------------------
+        function openDetail(id) {
+            const panel = document.getElementById("userDetailPanel");
+            panel.classList.remove("translate-x-full");
+            const detailContent = document.getElementById("detailContent");
+            detailContent.innerHTML = "<p>Đang tải thông tin người dùng...</p>";
+
+            fetch(`/api/admin/users/${id}`)
+                .then(res => {
+                    if (!res.ok) throw new Error("Không thể tải dữ liệu người dùng");
+                    return res.json();
+                })
+                .then(user => {
+                    detailContent.innerHTML = `
+                        <div class="space-y-2">
+                            <p><strong>ID:</strong> ${user.id}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                            <p><strong>Số điện thoại:</strong> ${user.phone ?? 'Chưa có'}</p>
+                            <p><strong>Họ tên:</strong> ${user.name ?? 'Chưa có'}</p>
+                            <p><strong>Trạng thái:</strong> 
+                                ${user.active
+                            ? '<span class="text-green-600 font-medium">Đang hoạt động</span>'
+                            : '<span class="text-red-600 font-medium">Đã khóa</span>'}
+                            </p>
+                            <p><strong>Ngày tạo:</strong> ${user.createdAt ?? 'Không rõ'}</p>
+                        </div>
+                    `;
+                })
+                .catch(err => {
+                    detailContent.innerHTML = `<p class="text-red-600">${err.message}</p>`;
+                });
+        }
+
+        // ------------------------------
+        // 🧩 HÀM 5: Đóng panel chi tiết
+        // ------------------------------
+        function closeDetail() {
+            const panel = document.getElementById("userDetailPanel");
+            panel.classList.add("translate-x-full");
+        }
+
+        // ------------------------------
+        // 🧩 HÀM 6: Mở form thêm người dùng mới
+        // ------------------------------
+        function openAddUserForm() {
+            document.getElementById("addUserModal").classList.remove("hidden");
+        }
+
+        // ------------------------------
+        // 🧩 HÀM 7: Đóng form thêm người dùng
+        // ------------------------------
+        function closeAddUserForm() {
+            document.getElementById("addUserModal").classList.add("hidden");
+        }
+
+        // ------------------------------
+        // 🧩 HÀM 8: Lưu người dùng mới (POST API)
+        // ------------------------------
+        function saveUser() {
+            const userName = document.getElementById("newUserName").value.trim();
+            const email = document.getElementById("newEmail").value.trim();
+            const phone = document.getElementById("newPhone").value.trim();
+            const name = document.getElementById("newName").value.trim();
+
+            if (!userName || !email) {
+                alert("Vui lòng nhập tên đăng nhập và email!");
+                return;
+            }
+
+            const data = { userName, email, phone, name };
+
+            fetch("/api/admin/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+                .then(async res => {
+                    const msg = await res.text();
+                    alert(msg);
+                    if (res.ok) {
+                        closeAddUserForm();
+                        loadUsers();
+                    }
+                })
+                .catch(err => alert("Lỗi: " + err));
+        }
+    </script>
+
+</div>

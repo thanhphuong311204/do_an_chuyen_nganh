@@ -1,0 +1,152 @@
+<div th:fragment="content" class="p-6">
+
+    <!-- 🌟 Tiêu đề -->
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-semibold flex items-center gap-2 text-gray-800">
+            <span>🔔</span> Quản lý thông báo hệ thống
+        </h1>
+        <button onclick="openForm()" 
+                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow transition-all duration-200 flex items-center gap-2">
+            <span>➕</span> Gửi thông báo
+        </button>
+    </div>
+
+    <!-- 🌿 Bảng thông báo -->
+    <div class="bg-white shadow-md rounded-xl overflow-hidden border border-gray-200">
+        <table class="w-full border-collapse">
+            <thead class="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 uppercase text-sm tracking-wide">
+                <tr>
+                    <th class="px-4 py-3 text-left w-16">#</th>
+                    <th class="px-4 py-3 text-left">Tiêu đề</th>
+                    <th class="px-4 py-3 text-left">Nội dung</th>
+                    <th class="px-4 py-3 text-left w-48">Ngày tạo</th>
+                    <th class="px-4 py-3 text-center w-24">Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="notiTableBody" class="divide-y divide-gray-100 text-gray-800 text-sm">
+                <tr>
+                    <td colspan="5" class="text-center py-6 text-gray-500">Đang tải...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 🌈 Modal tạo thông báo -->
+    <div id="notiModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl w-[420px] p-6 shadow-2xl transform transition-all scale-95">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">📝 Tạo thông báo mới</h2>
+
+            <label class="block text-sm text-gray-600 mb-1">Tiêu đề</label>
+            <input id="title" type="text" placeholder="Nhập tiêu đề..." 
+                   class="border w-full p-2 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+
+            <label class="block text-sm text-gray-600 mb-1">Nội dung</label>
+            <textarea id="message" placeholder="Nhập nội dung..." 
+                      class="border w-full p-2 rounded-lg h-28 mb-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeForm()" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition">Hủy</button>
+                <button onclick="sendBroadcast()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
+                    Gửi toàn hệ thống
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 JS xử lý -->
+    <script>
+        async function loadNotifications() {
+            try {
+                const res = await fetch('/api/admin/notifications');
+                const data = await res.json();
+                const tbody = document.getElementById('notiTableBody');
+                tbody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500 italic">Chưa có thông báo nào</td></tr>`;
+                    return;
+                }
+
+                data.forEach((n, index) => {
+                    const date = new Date(n.createdAt);
+                    const formattedDate = date.toLocaleTimeString('vi-VN') + '<br>' + date.toLocaleDateString('vi-VN');
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition-all">
+                            <td class="px-4 py-2 font-medium text-gray-500 text-center">${index + 1}</td>
+                            <td class="px-4 py-2 font-semibold text-gray-800">${n.notificationTitle || '(Không có tiêu đề)'}</td>
+                            <td class="px-4 py-2 text-gray-700">${n.notificationMessage || '(Không có nội dung)'}</td>
+                            <td class="px-4 py-2 text-sm text-gray-600">${formattedDate}</td>
+                            <td class="px-4 py-2 text-center">
+                                <button onclick="del(${n.notificationId})"
+                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-medium transition-all">
+                                    Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error('Lỗi khi tải thông báo:', e);
+                document.getElementById('notiTableBody').innerHTML =
+                    `<tr><td colspan="5" class="text-center py-6 text-red-500">❌ Không thể tải dữ liệu</td></tr>`;
+            }
+        }
+
+        async function sendBroadcast() {
+            const title = document.getElementById('title').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (!title || !message) {
+                alert('⚠️ Vui lòng nhập đầy đủ tiêu đề và nội dung.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/notifications/broadcast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        notificationTitle: title,
+                        notificationMessage: message
+                    })
+                });
+
+                if (res.ok) {
+                    alert('✅ Đã gửi thông báo toàn hệ thống!');
+                    closeForm();
+                    loadNotifications();
+                } else {
+                    alert('❌ Gửi thông báo thất bại.');
+                }
+            } catch (e) {
+                console.error('Lỗi khi gửi thông báo:', e);
+            }
+        }
+
+        async function del(id) {
+            if (!confirm('🗑️ Bạn có chắc chắn muốn xóa thông báo này?')) return;
+            try {
+                const res = await fetch(`/api/admin/notifications/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadNotifications();
+                } else {
+                    alert('❌ Xóa thất bại.');
+                }
+            } catch (e) {
+                console.error('Lỗi khi xóa thông báo:', e);
+            }
+        }
+
+        function openForm() {
+            document.getElementById('title').value = '';
+            document.getElementById('message').value = '';
+            document.getElementById('notiModal').classList.remove('hidden');
+        }
+
+        function closeForm() {
+            document.getElementById('notiModal').classList.add('hidden');
+        }
+
+        document.addEventListener("DOMContentLoaded", loadNotifications);
+    </script>
+</div>

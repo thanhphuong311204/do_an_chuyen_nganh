@@ -1,0 +1,155 @@
+<div th:fragment="content">
+
+    <!-- Tiêu đề -->
+    <h1 class="text-3xl font-semibold mb-6">🎯 Quản lý mục tiêu hệ thống</h1>
+
+    <!-- ========== THỐNG KÊ TỔNG QUAN ========== -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-blue-100 p-5 rounded-lg text-center shadow">
+            <h2 class="text-2xl font-bold text-blue-700" th:text="${stats.totalGoals}">0</h2>
+            <p class="text-gray-700 mt-1">Tổng số mục tiêu</p>
+        </div>
+
+        <div class="bg-green-100 p-5 rounded-lg text-center shadow">
+            <h2 class="text-2xl font-bold text-green-700" th:text="${stats.completedGoals}">0</h2>
+            <p class="text-gray-700 mt-1">Hoàn thành</p>
+        </div>
+
+        <div class="bg-yellow-100 p-5 rounded-lg text-center shadow">
+            <h2 class="text-2xl font-bold text-yellow-700" th:text="${stats.completionRate + '%'}">0%</h2>
+            <p class="text-gray-700 mt-1">Tỷ lệ hoàn thành</p>
+        </div>
+
+        <div class="bg-purple-100 p-5 rounded-lg text-center shadow">
+            <h2 class="text-2xl font-bold text-purple-700"
+                th:text="${#numbers.formatInteger(stats.totalSaved, 0, 'POINT')} + ' ₫'">0 ₫</h2>
+            <p class="text-gray-700 mt-1">Tổng tiền đã đạt</p>
+        </div>
+    </div>
+
+    <!-- ========== BIỂU ĐỒ TỶ LỆ HOÀN THÀNH THEO THÁNG ========== -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold">Tỷ lệ hoàn thành mục tiêu theo tháng</h2>
+            <button onclick="reloadChart()" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 text-sm">
+                🔄 Làm mới
+            </button>
+        </div>
+        <canvas id="goalChart" height="120"></canvas>
+    </div>
+
+    <!-- ========== BẢNG TỔNG HỢP ẨN DANH ========== -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-lg font-semibold mb-4">Mẫu thống kê ẩn danh</h2>
+        <table class="w-full border-collapse text-left">
+            <thead class="border-b text-gray-600">
+                <tr>
+                    <th class="py-2">#</th>
+                    <th>Tên danh mục</th>
+                    <th>Tiền mục tiêu</th>
+                    <th>Đã đạt</th>
+                    <th>Tiến độ</th>
+                </tr>
+            </thead>
+            <tbody id="sampleGoalBody" class="text-gray-700">
+                <!-- Dữ liệu mẫu (ẩn danh) -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        let chartInstance;
+
+        // 📊 Load dữ liệu biểu đồ từ API thật
+        async function loadGoalStats() {
+            try {
+                const res = await fetch('/api/admin/goals/stats-by-month');
+                const data = await res.json();
+
+                const labels = data.map(d => 'Tháng ' + d.month);
+                const completed = data.map(d => d.completedGoals);
+                const total = data.map(d => d.totalGoals);
+
+                const rates = total.map((t, i) => t > 0 ? (completed[i] / t * 100).toFixed(1) : 0);
+
+                const ctx = document.getElementById('goalChart').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Tỷ lệ hoàn thành (%)',
+                            data: rates,
+                            backgroundColor: '#4F46E5'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: { beginAtZero: true, max: 100, title: { display: true, text: 'Phần trăm (%)' } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.parsed.y + '% hoàn thành'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Lỗi tải biểu đồ:", error);
+            }
+        }
+
+        // 🔁 Làm mới biểu đồ
+        function reloadChart() {
+            loadGoalStats();
+        }
+
+        // 📋 Load bảng thống kê thật từ DB (ẩn danh)
+        async function loadSampleTable() {
+            const tbody = document.getElementById('sampleGoalBody');
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 py-3">Đang tải dữ liệu...</td></tr>`;
+
+            try {
+                const res = await fetch('/api/admin/goals/list');
+                const data = await res.json();
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 py-3">Không có mục tiêu nào</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.map((g, i) => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="py-2 px-3">${i + 1}</td>
+                    <td class="py-2 px-3">${g.name}</td>
+                    <td class="py-2 px-3">${Number(g.target).toLocaleString('vi-VN')} ₫</td>
+                    <td class="py-2 px-3">${Number(g.current).toLocaleString('vi-VN')} ₫</td>
+                    <td class="py-2 px-3">
+                        <span class="${g.progress >= 100 ? 'text-green-600' :
+                        g.progress >= 70 ? 'text-yellow-600' :
+                            'text-gray-600'
+                    } font-semibold">${g.progress}%</span>
+                    </td>
+                </tr>
+            `).join('');
+            } catch (error) {
+                console.error("Lỗi tải bảng:", error);
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-3">Lỗi tải dữ liệu</td></tr>`;
+            }
+        }
+
+        // Khi trang load xong
+        document.addEventListener("DOMContentLoaded", () => {
+            loadGoalStats();
+            loadSampleTable();
+        });
+    </script>
+</div>

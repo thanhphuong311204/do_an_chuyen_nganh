@@ -1,98 +1,103 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Trang quản trị</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
         body {
-            background-color: #f8f9fa;
-        }
-        .sidebar {
-            width: 240px;
-            height: 100vh;
-            background-color: #212529;
-            color: white;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 1rem 0;
-        }
-        .sidebar a {
-            color: #adb5bd;
-            text-decoration: none;
-            display: block;
-            padding: 10px 20px;
-            transition: background-color 0.2s;
-        }
-        .sidebar a:hover {
-            background-color: #343a40;
-            color: white;
-        }
-        .content {
-            margin-left: 240px;
-            padding: 2rem;
-        }
-        .card {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-family: "Poppins", sans-serif;
         }
     </style>
 </head>
-<body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <h4 class="text-center mb-4">Quản trị viên</h4>
-    <a href="/">🏠 Trang chủ</a>
-    <a href="/users">👤 Quản lý người dùng</a>
-    <a href="/budgets">💰 Quản lý ngân sách</a>
-    <a href="/categories">📂 Quản lý danh mục</a>
-    <a href="/expenses">💸 Quản lý chi tiêu</a>
-    <a href="/goals">🎯 Quản lý mục tiêu</a>
-    <a href="/incomes">💵 Quản lý thu nhập</a>
-    <a href="/wallets">👛 Quản lý ví</a>
-    <a href="/recurring-transactions">🔄 Quản lý giao dịch định kỳ</a>
-    <a href="#">📊 Báo cáo</a>
-    <a href="#">⚙️ Cài đặt</a>
-    <hr>
-    <a href="/admin/login" class="text-danger">🚪 Đăng xuất</a>
+<body class="bg-gray-100">
+
+<!-- ======================= SIDEBAR ======================= -->
+<div class="flex h-screen">
+
+    <aside class="w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-50">
+        <div class="px-6 py-6 border-b">
+            <h1 class="text-2xl font-semibold text-gray-800">Admin Panel</h1>
+        </div>
+
+        <nav class="mt-6">
+
+            <a href="/admin/dashboard"
+               class="block px-6 py-3 text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition font-medium">
+                📊 Dashboard tổng quan
+            </a>
+
+            <a href="/admin/users"
+               class="block px-6 py-3 text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition font-medium">
+                👥 Quản lý người dùng
+            </a>
+
+            <a href="/admin/categories"
+               class="block px-6 py-3 text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition font-medium">
+                🗂 Quản lý danh mục
+            </a>
+
+            <a href="/admin/notifications"
+               class="block px-6 py-3 text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition font-medium">
+                🔔 Thông báo FCM
+            </a>
+
+            <a href="/admin/goals"
+               class="block px-6 py-3 text-gray-700 hover:bg-orange-100 hover:text-orange-600 transition font-medium">
+                🎯 Mục tiêu hệ thống
+            </a>
+
+            <a href="/admin/logout"
+               class="block px-6 py-3 text-gray-700 hover:bg-red-100 hover:text-red-500 transition font-medium">
+                🚪 Đăng xuất
+            </a>
+
+        </nav>
+    </aside>
+
+    <!-- ======================= MAIN CONTENT ======================= -->
+    <main class="flex-1 ml-64 p-10">
+
+        <h1 class="text-3xl font-semibold text-gray-800 mb-8">Dashboard tổng quan</h1>
+
+        <div id="stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    </main>
 </div>
 
-<!-- Content -->
-<div class="content">
-    <h3 class="mb-4">Tổng quan hệ thống</h3>
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card text-center p-3">
-                <h5>Người dùng</h5>
-                <p class="fs-4 text-primary">120</p>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card text-center p-3">
-                <h5>Tổng chi</h5>
-                <p class="fs-4 text-danger">45,000,000₫</p>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card text-center p-3">
-                <h5>Tổng thu</h5>
-                <p class="fs-4 text-success">68,000,000₫</p>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card text-center p-3">
-                <h5>Giao dịch</h5>
-                <p class="fs-4 text-warning">312</p>
-            </div>
-        </div>
-    </div>
 
-    <div class="text-center mt-5">
-        <h5>Chào mừng bạn đến hệ thống quản lý chi tiêu!</h5>
-        <p class="text-muted">Sử dụng menu bên trái để điều hướng các chức năng quản trị.</p>
-    </div>
-</div>
+<script>
+    fetch("/api/admin/stats/overview")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("stats").innerHTML = `
+                ${card("Tổng người dùng", data.totalUsers, "👥")}
+                ${card("Tổng số ví", data.totalWallets, "💼")}
+                ${card("Tổng thu", formatMoney(data.totalIncome), "💰")}
+                ${card("Tổng chi", formatMoney(data.totalExpense), "💸")}
+                ${card("Mục tiêu", data.totalGoals, "🎯")}
+                ${card("Giao dịch định kỳ", data.totalRecurring, "🔄")}
+            `;
+        });
+
+    function card(title, value, icon) {
+        return `
+            <div class="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                <p class="text-gray-500 text-sm flex items-center gap-2">
+                    <span class="text-xl">${icon}</span> ${title}
+                </p>
+                <h2 class="text-3xl font-bold text-gray-800 mt-2">${value}</h2>
+            </div>
+        `;
+    }
+
+    function formatMoney(num) {
+        return num.toLocaleString("vi-VN") + " ₫";
+    }
+</script>
 
 </body>
 </html>

@@ -102,24 +102,29 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-public void changePassword(String oldPassword, String newPassword) {
-    User user = getCurrentUser();
+    public void changePassword(String oldPassword, String newPassword) {
 
-if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
-    throw new RuntimeException("Mật khẩu cũ không đúng!");
-}
-user.setPasswordHash(passwordEncoder.encode(newPassword));
-    // ✅ Mã hóa và lưu mật khẩu mới
-    user.setPasswordHash(passwordEncoder.encode(newPassword));
-    userRepository.save(user);
-}    /**
-     * 🔑 Xác thực người dùng (dùng cho Spring Security)
-     */
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + email));
+        User user = getCurrentUser();
 
-        return new UserDetailsImpl(user);
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new RuntimeException("Mật khẩu cũ không đúng!");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        // ✅ Mã hóa và lưu mật khẩu mới
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
+
+    @Override
+public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + email));
+
+    System.out.println("🔍 Kiểm tra người dùng: " + email);
+    System.out.println("   Hash trong DB: " + user.getPasswordHash());
+    System.out.println("   Password hợp lệ (123456)? " +
+        passwordEncoder.matches("123456", user.getPasswordHash()));
+
+    return new UserDetailsImpl(user);
+}
 }

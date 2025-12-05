@@ -1,0 +1,144 @@
+<div th:fragment="content">
+    <h1 class="text-3xl font-semibold mb-6">Quản lý danh mục</h1>
+
+    <div class="flex justify-end mb-4">
+        <button onclick="openAddForm()" 
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+            + Thêm danh mục
+        </button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+        <table class="w-full text-left border-collapse">
+            <thead class="border-b text-gray-600">
+                <tr>
+                    <th class="py-2">ID</th>
+                    <th>Tên danh mục</th>
+                    <th>Loại</th>
+                    <th>Biểu tượng</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="categoryTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="categoryFormModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl w-[400px] shadow-xl">
+            <h2 id="modalTitle" class="text-xl font-semibold mb-4">Thêm danh mục</h2>
+
+            <form id="categoryForm" class="space-y-3">
+                <input type="hidden" id="categoryId">
+
+                <div>
+                    <label class="block text-gray-700 mb-1">Tên danh mục</label>
+                    <input type="text" id="categoryName" class="w-full border rounded px-3 py-2 focus:outline-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-1">Loại</label>
+                    <select id="categoryType" class="w-full border rounded px-3 py-2 focus:outline-blue-500">
+                        <option value="expense">Chi tiêu</option>
+                        <option value="income">Thu nhập</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-1">Biểu tượng (Icon URL)</label>
+                    <input type="text" id="categoryIcon" placeholder="https://..." 
+                           class="w-full border rounded px-3 py-2 focus:outline-blue-500">
+                </div>
+
+                <div class="flex justify-end space-x-2 mt-4">
+                    <button type="button" onclick="closeForm()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Hủy</button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadCategories);
+
+        function loadCategories() {
+            fetch("/api/admin/categories")
+                .then(res => res.json())
+                .then(categories => {
+                    const tbody = document.getElementById("categoryTableBody");
+                    tbody.innerHTML = "";
+
+                    categories.forEach(c => {
+                        tbody.innerHTML += `
+                            <tr class="border-b">
+                                <td class="py-2">${c.categoryId}</td>
+                                <td>${c.categoryName}</td>
+                                <td class="capitalize">${c.type === 'expense' ? 'Chi tiêu' : 'Thu nhập'}</td>
+                                <td><img src="${c.iconUrl}" class="w-6 h-6"></td>
+                                <td class="space-x-2 py-2">
+                                    <button onclick="editCategory(${c.categoryId})" 
+                                            class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded">Sửa</button>
+                                    <button onclick="deleteCategory(${c.categoryId})" 
+                                            class="bg-red-100 text-red-700 px-3 py-1 rounded">Xóa</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                });
+        }
+
+        function openAddForm() {
+            document.getElementById("modalTitle").innerText = "Thêm danh mục";
+            document.getElementById("categoryForm").reset();
+            document.getElementById("categoryId").value = "";
+            document.getElementById("categoryFormModal").classList.remove("hidden");
+        }
+
+        function closeForm() {
+            document.getElementById("categoryFormModal").classList.add("hidden");
+        }
+
+        function editCategory(id) {
+            fetch(`/api/admin/categories/${id}`)
+                .then(res => res.json())
+                .then(c => {
+                    document.getElementById("modalTitle").innerText = "Sửa danh mục";
+                    document.getElementById("categoryId").value = c.categoryId;
+                    document.getElementById("categoryName").value = c.categoryName;
+                    document.getElementById("categoryType").value = c.type;
+                    document.getElementById("categoryIcon").value = c.iconUrl;
+                    document.getElementById("categoryFormModal").classList.remove("hidden");
+                });
+        }
+
+        document.getElementById("categoryForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const id = document.getElementById("categoryId").value;
+            const data = {
+                categoryName: document.getElementById("categoryName").value,
+                type: document.getElementById("categoryType").value,
+                iconUrl: document.getElementById("categoryIcon").value
+            };
+
+            fetch(`/api/admin/categories${id ? "/" + id : ""}`, {
+                method: id ? "PUT" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("Lỗi khi lưu danh mục");
+                    closeForm();
+                    loadCategories();
+                })
+                .catch(err => alert(err.message));
+        });
+
+        function deleteCategory(id) {
+            if (!confirm("Bạn có chắc muốn xóa danh mục này không?")) return;
+            fetch(`/api/admin/categories/${id}`, { method: "DELETE" })
+                .then(() => loadCategories());
+        }
+    </script>
+</div>

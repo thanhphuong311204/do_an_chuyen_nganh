@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 import com.appQLCT.AppQLCT.entity.authentic.User;
 import com.appQLCT.AppQLCT.entity.core.Expense;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
@@ -55,4 +56,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
     );
+    @Query("SELECT SUM(e.amount) FROM Expense e")
+Optional<BigDecimal> sumAllExpenses();
+
 }
