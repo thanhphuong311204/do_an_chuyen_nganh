@@ -66,7 +66,8 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/",
                         "/admin/**", 
-                        "/api/ai/**",        
+                        "/api/ai/**",
+                        "/api/assistant/**",        
                         "/css/**",
                         "/js/**",
                         "/admin/login",
@@ -81,7 +82,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/budgets/**").authenticated()
                 .requestMatchers("/api/reports/**").authenticated()
                 .requestMatchers("/api/recurring/**").authenticated()
-         
+                .requestMatchers("/api/streak/**").authenticated()
+                .requestMatchers("/api/assistant/**").permitAll()
+
+
 
                 .anyRequest().permitAll()
             );

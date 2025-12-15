@@ -1,4 +1,4 @@
-package com.appQLCT.AppQLCT.controller.AI;
+package com.appQLCT.AppQLCT.controller.ai;
 
 import com.appQLCT.AppQLCT.entity.authentic.User;
 import com.appQLCT.AppQLCT.repository.core.UserRepository;

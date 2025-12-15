@@ -59,17 +59,15 @@ public class UserService implements UserDetailsService {
      * 👤 Lấy user đang đăng nhập
      */
     public User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null) {
-            throw new RuntimeException("Không có Authentication trong context!");
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("User chưa đăng nhập");
         }
 
-        if (!authentication.isAuthenticated()) {
-            throw new RuntimeException("Người dùng chưa xác thực!");
-        }
+        String email = auth.getName();
 
-        String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy user với email: " + email));
     }
@@ -116,15 +114,15 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + email));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + email));
 
-    System.out.println("🔍 Kiểm tra người dùng: " + email);
-    System.out.println("   Hash trong DB: " + user.getPasswordHash());
-    System.out.println("   Password hợp lệ (123456)? " +
-        passwordEncoder.matches("123456", user.getPasswordHash()));
+        System.out.println("🔍 Kiểm tra người dùng: " + email);
+        System.out.println("   Hash trong DB: " + user.getPasswordHash());
+        System.out.println("   Password hợp lệ (123456)? " +
+                passwordEncoder.matches("123456", user.getPasswordHash()));
 
-    return new UserDetailsImpl(user);
-}
+        return new UserDetailsImpl(user);
+    }
 }

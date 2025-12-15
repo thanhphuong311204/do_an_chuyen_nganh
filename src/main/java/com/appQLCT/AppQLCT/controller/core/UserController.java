@@ -52,9 +52,6 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * ✏️ Cập nhật thông tin hồ sơ người dùng
-     */
     @PutMapping("/profile")
     public ResponseEntity<User> updateProfile(@RequestBody Map<String, String> body) {
         User updated = userService.updateProfile(

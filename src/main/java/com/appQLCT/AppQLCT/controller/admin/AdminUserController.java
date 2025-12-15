@@ -1,7 +1,6 @@
 package com.appQLCT.AppQLCT.controller.admin;
 
 import com.appQLCT.AppQLCT.entity.authentic.User;
-import com.appQLCT.AppQLCT.enu.AuthProvider;
 import com.appQLCT.AppQLCT.repository.core.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +17,13 @@ public class AdminUserController {
 
     private final UserRepository userRepository;
 
-    // -------------------- LẤY DANH SÁCH --------------------
+    // -------------------- LẤY DANH SÁCH USER --------------------
     @GetMapping
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // -------------------- XEM CHI TIẾT --------------------
+    // -------------------- LẤY USER THEO ID --------------------
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         return userRepository.findById(id)
@@ -32,66 +31,38 @@ public class AdminUserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // -------------------- KHÓA USER --------------------
-    @PutMapping("/{id}/ban")
-    public ResponseEntity<?> banUser(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setActive(false);
-                    userRepository.save(user);
-                    return ResponseEntity.ok("Đã khóa tài khoản");
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // -------------------- MỞ KHÓA USER --------------------
-    @PutMapping("/{id}/unban")
-    public ResponseEntity<?> unbanUser(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setActive(true);
-                    userRepository.save(user);
-                    return ResponseEntity.ok("Đã mở khóa tài khoản");
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // -------------------- THÊM NGƯỜI DÙNG MỚI --------------------
+    // -------------------- TẠO USER --------------------
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody User userRequest) {
         try {
-            // 1️⃣ Kiểm tra email trùng
             if (userRepository.existsByEmail(userRequest.getEmail())) {
-                return ResponseEntity.badRequest().body("Email đã tồn tại!");
+                return ResponseEntity.badRequest().body("Email đã tồn tại");
             }
 
-            // 2️⃣ Nếu không nhập username → tự sinh từ email
-            if (userRequest.getUsername() == null || userRequest.getUsername().isEmpty()) {
-                userRequest.setUsername(userRequest.getEmail().split("@")[0]);
-            }
-
-            // ✅ 3️⃣ Mã hóa mật khẩu (nếu nhập), nếu không → mặc định "123456"
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            if (userRequest.getPasswordHash() == null || userRequest.getPasswordHash().isEmpty()) {
-                userRequest.setPasswordHash(encoder.encode("123456"));
-            } else {
-                userRequest.setPasswordHash(encoder.encode(userRequest.getPasswordHash()));
-            }
+            userRequest.setPasswordHash(
+                    encoder.encode(userRequest.getPasswordHash())
+            );
 
-            // 4️⃣ Các thông tin mặc định
             userRequest.setActive(true);
-            userRequest.setBiometricEnable(0);
             userRequest.setRole("USER");
-            userRequest.setAuthProvider(AuthProvider.email);
             userRequest.setCreatedAt(LocalDateTime.now());
 
-            // 5️⃣ Lưu vào DB
             userRepository.save(userRequest);
 
-            return ResponseEntity.ok("Tạo người dùng thành công!");
+            return ResponseEntity.ok(userRequest);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Lỗi server: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Lỗi server");
         }
+    }
+
+    // -------------------- XÓA USER --------------------
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        userRepository.deleteById(id);
+        return ResponseEntity.ok("Đã xóa user");
     }
 }

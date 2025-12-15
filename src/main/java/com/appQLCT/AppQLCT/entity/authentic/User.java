@@ -1,11 +1,14 @@
 package com.appQLCT.AppQLCT.entity.authentic;
+
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.appQLCT.AppQLCT.enu.AuthProvider;
 
 @Entity
-@Table(name = "users") 
+@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +23,7 @@ public class User {
     @Column(name = "user_name", nullable = false, length = 100)
     private String username;
 
-    @Column( name = "email",nullable = false, unique = true, length = 255)
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
     @Column(name = "password_hash", length = 255)
@@ -44,7 +47,6 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
-
     @Column(name = "biometric_enable")
     @Builder.Default
     private int biometricEnable = 0;
@@ -55,12 +57,27 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
-
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
     @Column(name = "fcm_token")
     private String fcmToken;
 
-    
+    public void setBiometricEnable(boolean enabled) {
+        this.biometricEnable = enabled ? 1 : 0;
+    }
+
+    public boolean isBiometricEnable() {
+        return this.biometricEnable == 1;
+    }
+
+    @Column(name = "last_activity_date")
+    private LocalDate lastActivityDate;
+
+    @Column(name = "current_streak")
+    private Integer currentStreak;
+
+    @Column(name = "longest_streak")
+    private Integer longestStreak;
+
 }
